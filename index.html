@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>16属性クォルトゲーム</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #fdfaf3;
+      --board-bg: #fde68a;
+      --board-border: #f59e0b;
+      --text-main: #1e293b;
+      --color-red: #ef4444;
+      --color-blue: #0284c7;
+      --mark-yellow: #facc15;
+      --mark-yellow-stroke: #ca8a04;
+      --mark-green: #22c55e;
+      --mark-green-stroke: #15803d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      user-select: none;
+    }
+
+    header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #fed7aa;
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #b45309;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn {
+      background: white;
+      border: 1.5px solid #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: #f59e0b;
+      border-color: #d97706;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #d97706;
+    }
+
+    /* Mode selector bar */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 900px;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    .mode-bar {
+      display: flex;
+      background: #fef3c7;
+      padding: 3px;
+      border-radius: 12px;
+      gap: 3px;
+      border: 1px solid #fde68a;
+    }
+    .mode-btn {
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      background: transparent;
+      color: #92400e;
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      background: white;
+      color: #78350f;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    /* CPU Difficulty selector */
+    .diff-bar {
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 1px solid #fed7aa;
+      border-radius: 12px;
+      padding: 2px 6px;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #78350f;
+    }
+    .diff-btn {
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 800;
+      font-size: 0.72rem;
+      cursor: pointer;
+      background: transparent;
+      color: #64748b;
+      transition: all 0.15s;
+    }
+    .diff-btn.active {
+      background: #ea580c;
+      color: white;
+      box-shadow: 0 1px 3px rgba(234, 88, 12, 0.3);
+    }
+
+    /* Timer selector */
+    .timer-bar {
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 1px solid #fed7aa;
+      border-radius: 12px;
+      padding: 2px 6px;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #78350f;
+    }
+    .timer-btn {
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 800;
+      font-size: 0.72rem;
+      cursor: pointer;
+      background: transparent;
+      color: #64748b;
+      transition: all 0.15s;
+    }
+    .timer-btn.active {
+      background: #f59e0b;
+      color: white;
+      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Status banner */
+    .status-card {
+      background: white;
+      border: 2px solid #fed7aa;
+      border-radius: 16px;
+      padding: 8px 14px;
+      width: 100%;
+      max-width: 820px;
+      margin-bottom: 6px;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .tray-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Timer progress bar */
+    .timer-meter-wrap {
+      width: 100%;
+      height: 4px;
+      background: #f1f5f9;
+      border-radius: 9999px;
+      overflow: hidden;
+      display: none;
+    }
+    .timer-meter-bar {
+      height: 100%;
+      background: #10b981;
+      width: 100%;
+      transition: width 0.9s linear, background-color 0.3s;
+    }
+
+    .flow-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      background: #f8fafc;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .action-badge {
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-mine { background: #059669; }
+    .badge-opponent { background: #0284c7; }
+    .badge-choose { background: #d97706; }
+
+    .tray-main-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .tray-card-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .card-slot-box {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: #fffbeb;
+      border: 2px dashed #f59e0b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .card-slot-box.active-mine {
+      border: 2px solid #10b981;
+      background: #ecfdf5;
+      box-shadow: 0 0 0 3px #a7f3d0;
+    }
+    .card-slot-box.active-opp {
+      border: 2px solid #38bdf8;
+      background: #f0f9ff;
+      box-shadow: 0 0 0 3px #bae6fd;
+    }
+
+    .attr-mini-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .mini-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    .player-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .player-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: white;
+    }
+    .p1-icon { background: #ea580c; }
+    .p2-icon { background: #0284c7; }
+
+    .status-msg {
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #1e293b;
+    }
+
+    .guide-banner {
+      width: 100%;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .guide-banner.mine {
+      background: #059669;
+      color: white;
+    }
+    .guide-banner.opp {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    /* Game Layout */
+    .game-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 900px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .game-view {
+      display: none;
+      height: 100dvh;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+      justify-content: space-between;
+      padding: 8px 12px;
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .mobile-stage-bar {
+      display: none;
+      width: 100%;
+      max-width: 360px;
+      margin: 2px auto 8px auto;
+      background: white;
+      border: 1.5px solid #fed7aa;
+      border-radius: 14px;
+      padding: 3px;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+    }
+    .mobile-tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 6px 4px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #475569;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      touch-action: manipulation;
+      transition: all 0.15s;
+    }
+    .mobile-tab-btn.active {
+      background: #ea580c;
+      color: white;
+      box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3);
+    }
+    .mob-pill {
+      font-size: 0.65rem;
+      padding: 1px 5px;
+      border-radius: 9999px;
+      background: #fde68a;
+      color: #78350f;
+      font-weight: 900;
+    }
+
+    @media (max-width: 680px) {
+      body {
+        height: auto !important;
+        min-height: 100dvh;
+        overflow-y: auto !important;
+        justify-content: flex-start !important;
+        padding-bottom: 50px !important;
+      }
+      .game-view {
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow-y: auto !important;
+        justify-content: flex-start !important;
+        padding: 4px 6px 40px 6px !important;
+      }
+      .mobile-stage-bar {
+        display: flex !important;
+      }
+      .game-container {
+        flex-direction: column !important;
+        overflow: visible !important;
+        gap: 10px;
+        align-items: center;
+      }
+      .board-grid {
+        grid-template-columns: repeat(4, 52px) !important;
+        grid-template-rows: repeat(4, 52px) !important;
+        gap: 6px !important;
+      }
+      .pool-wrapper {
+        max-width: 320px !important;
+      }
+      .opening-view {
+        height: auto !important;
+        min-height: 100dvh;
+        justify-content: flex-start !important;
+        padding: 8px 4px !important;
+      }
+      .opening-card {
+        max-height: none !important;
+      }
+      .btn, .cell, .card-tile {
+        touch-action: manipulation;
+      }
+    }
+
+    /* 4x4 Board */
+    .board-wrapper {
+      background: #fef3c7;
+      border: 3px solid var(--board-border);
+      border-radius: 18px;
+      padding: 10px;
+      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 56px);
+      grid-template-rows: repeat(4, 56px);
+      gap: 6px;
+      background: rgba(180, 83, 9, 0.1);
+      padding: 6px;
+      border-radius: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .board-grid {
+        grid-template-columns: repeat(4, 66px);
+        grid-template-rows: repeat(4, 66px);
+        gap: 8px;
+      }
+    }
+
+    .cell {
+      background: rgba(255, 255, 255, 0.7);
+      border: 2px dashed #f59e0b;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .cell:hover:not(.filled) {
+      background: white;
+      border-color: #ea580c;
+      transform: scale(1.03);
+    }
+    .cell.filled {
+      border: none;
+      cursor: default;
+      background: transparent;
+    }
+    .cell.winning {
+      animation: pulse-gold 0.8s infinite alternate;
+      border: 3px solid #f59e0b;
+      background: #fef08a;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.8);
+      transform: scale(1.06);
+      z-index: 10;
+    }
+    .cell.winning::after {
+      content: '👑';
+      position: absolute;
+      top: -8px;
+      right: -6px;
+      font-size: 14px;
+      z-index: 20;
+    }
+    .cell.dimmed {
+      opacity: 0.45;
+      filter: grayscale(30%);
+    }
+
+    /* Win Floating Bar */
+    .win-floating-bar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 2px solid #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      font-size: 0.8rem;
+    }
+
+    @keyframes pulse-gold {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
+    }
+
+    /* Pool */
+    .pool-wrapper {
+      background: white;
+      border: 2px solid #fed7aa;
+      border-radius: 18px;
+      padding: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      width: 100%;
+      max-width: 320px;
+      flex-shrink: 0;
+    }
+    .pool-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #475569;
+    }
+    .pool-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: #f8fafc;
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Card SVG elements */
+    .card-tile {
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 12px;
+      border: 2px solid #cbd5e1;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .card-tile:hover {
+      transform: scale(1.06);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+    .card-tile.selected {
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 4px #fbbf24;
+      transform: scale(1.08);
+      animation: bounce-card 0.8s infinite alternate;
+    }
+    .card-tile.disabled {
+      opacity: 0.25;
+      filter: grayscale(80%);
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    @keyframes bounce-card {
+      from { transform: translateY(0); }
+      to { transform: translateY(-4px); }
+    }
+
+    /* Win overlay modal */
+    .overlay-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 28px;
+      padding: 24px;
+      max-width: 480px;
+      width: 100%;
+      border: 4px solid #f59e0b;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      text-align: center;
+      position: relative;
+    }
+    .win-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #ea580c;
+      margin-bottom: 8px;
+    }
+    .attr-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin: 12px 0;
+    }
+    .attr-tag {
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      color: #92400e;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: #94a3b8;
+    }
+
+    /* Opening View Styles */
+    .opening-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      width: 100%;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    .opening-card {
+      background: white;
+      border: 4px solid #fcd34d;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 94dvh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      position: relative;
+    }
+    .opening-header {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      border-radius: 20px 20px 0 0;
+      position: relative;
+    }
+    .opening-tabs {
+      display: flex;
+      background: #fef3c7;
+      padding: 4px;
+      border-bottom: 1px solid #fde68a;
+    }
+    .opening-tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: #b45309;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .opening-tab.active {
+      background: white;
+      color: #78350f;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .opening-body {
+      padding: 16px;
+    }
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .option-btn {
+      padding: 8px;
+      border: 2px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.2s;
+    }
+    .option-btn.active {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+    }
+  </style>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+  <!-- Opening Screen View -->
+  <div id="opening-view" class="opening-view">
+    <div class="opening-card">
+      <div class="opening-header">
+        <button onclick="toggleSound()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 10px; border-radius: 9999px; cursor: pointer; font-size: 0.8rem;" id="opening-sound-btn">🔊 音ON</button>
+        <div style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(255,255,255,0.2); display: inline-block; padding: 2px 10px; border-radius: 9999px; margin-bottom: 6px;">16-Attribute Mind Board Game</div>
+        <h1 style="margin: 0; font-size: 1.8rem; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>👑</span> QUARTO! <span style="font-size: 1.2rem; opacity: 0.9;">クォルト</span>
+        </h1>
+        <p style="margin: 4px 0 0; font-size: 0.75rem; opacity: 0.95;">相手が置くカードを渡して揃えさせる！世界的大人気ボードゲーム</p>
+      </div>
+
+      <div class="opening-tabs">
+        <button class="opening-tab active" id="tab-btn-setup" onclick="switchOpeningTab('setup')">⚙️ 初期設定＆スタート</button>
+        <button class="opening-tab" id="tab-btn-rules" onclick="switchOpeningTab('rules')">📖 遊び方・ルール説明</button>
+      </div>
+
+      <div class="opening-body" id="opening-body-setup">
+        <!-- Mode Select -->
+        <label style="font-size: 0.8rem; font-weight: 800; color: #78350f; display: block; margin-bottom: 6px;">① 対戦モードを選択</label>
+        <div class="option-grid">
+          <button class="option-btn active" id="open-opt-cpu" onclick="selectOpeningMode('cpu')">
+            <span style="font-size: 1.2rem;">🤖</span>
+            <span>1人プレイ</span>
+            <span style="font-size: 0.65rem; color: #64748b;">CPU対戦</span>
+          </button>
+          <button class="option-btn " id="open-opt-local" onclick="selectOpeningMode('local')">
+            <span style="font-size: 1.2rem;">👥</span>
+            <span>2人対戦</span>
+            <span style="font-size: 0.65rem; color: #64748b;">交代プレイ</span>
+          </button>
+          <button class="option-btn " id="open-opt-p2p" onclick="selectOpeningMode('p2p')">
+            <span style="font-size: 1.2rem;">🌐</span>
+            <span>通信対戦</span>
+            <span style="font-size: 0.65rem; color: #64748b;">P2Pルーム</span>
+          </button>
+        </div>
+
+        <!-- CPU Difficulty Select (visible in CPU mode) -->
+        <div id="open-cpu-diff-section" style="display: block; margin-bottom: 12px; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 14px; padding: 10px;">
+          <label style="font-size: 0.8rem; font-weight: 800; color: #78350f; display: flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+            <span>🛡️</span> ② CPUの強さ（難易度）を選択
+          </label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+            <button class="option-btn " id="open-diff-1" onclick="selectOpeningCpuDiff(1)">
+              <span style="font-size: 1.1rem;">🟢</span>
+              <span>初級</span>
+              <span style="font-size: 0.65rem; color: #64748b;">かんたん</span>
+            </button>
+            <button class="option-btn " id="open-diff-2" onclick="selectOpeningCpuDiff(2)">
+              <span style="font-size: 1.1rem;">🟡</span>
+              <span>中級</span>
+              <span style="font-size: 0.65rem; color: #64748b;">ふつう</span>
+            </button>
+            <button class="option-btn active" id="open-diff-4" onclick="selectOpeningCpuDiff(4)">
+              <span style="font-size: 1.1rem;">🔴</span>
+              <span>最強</span>
+              <span style="font-size: 0.65rem; color: #64748b;">深さ4探索</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Timer Select -->
+        <label id="open-timer-label" style="font-size: 0.8rem; font-weight: 800; color: #78350f; display: block; margin-bottom: 6px;">③ 1手の制限時間</label>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px;">
+          <button class="option-btn active" id="open-timer-unlimited" onclick="selectOpeningTimer('unlimited')">無制限</button>
+          <button class="option-btn " id="open-timer-10" onclick="selectOpeningTimer(10)">10秒</button>
+          <button class="option-btn " id="open-timer-20" onclick="selectOpeningTimer(20)">20秒</button>
+          <button class="option-btn " id="open-timer-30" onclick="selectOpeningTimer(30)">30秒</button>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);" onclick="startGameFromOpening()">
+          🚀 ゲームスタート！
+        </button>
+      </div>
+
+      <!-- Rules Tab -->
+      <div class="opening-body" id="opening-body-rules" style="display: none; font-size: 0.8rem; color: #334155; line-height: 1.5;">
+        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 10px; margin-bottom: 12px; color: #881337;">
+          <strong>💡 最大のルール特徴:</strong><br>
+          自分が置くカードは、<strong>相手が選んで渡してくれたカード</strong>です！
+        </div>
+
+        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 10px; margin-bottom: 12px;">
+          <strong style="color: #92400e;">4つの属性（計16種類）:</strong>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 6px; font-size: 0.75rem;">
+            <div>① 背景色: <strong style="color: #ef4444;">赤</strong> / <strong style="color: #0284c7;">青</strong></div>
+            <div>② 外枠形状: <strong>四角</strong> / <strong>丸</strong></div>
+            <div>③ 中央マーク: <strong>星 ★</strong> / <strong>ハート ♥</strong></div>
+            <div>④ マーク色: <strong style="color: #eab308;">黄</strong> / <strong style="color: #16a34a;">緑</strong></div>
+          </div>
+        </div>
+
+        <p style="margin-bottom: 12px;">
+          縦・横・斜めの4マスのうち、<strong>どれか1つの属性が共通して4枚揃った瞬間「クォルト」達成</strong>！配置した人の勝利となります。
+        </p>
+
+        <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 0.9rem;" onclick="switchOpeningTab('setup')">
+          初期設定に戻る
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Game Playing View -->
+  <div id="game-view" class="game-view">
+    <div>
+      <header>
+        <div class="title">
+          <button onclick="goToOpeningView()" style="background: #f59e0b; border: none; color: white; padding: 2px 6px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-right: 4px;" title="タイトルへ戻る">👑</button>
+          <span>16属性クォルト</span>
+        </div>
+        <div class="header-btns">
+          <button class="btn" onclick="goToOpeningView()" title="オープニング画面・初期設定へ戻る">🏠 タイトル</button>
+          <button class="btn" onclick="toggleSound()" id="sound-btn">🔊 音ON</button>
+          <button class="btn" onclick="openRules()">📖 ルール</button>
+          <button class="btn btn-primary" onclick="restartGame()">🔄 リセット</button>
+        </div>
+      </header>
+
+  <div class="nav-bar">
+    <div class="mode-bar">
+      <button class="mode-btn active" id="mode-cpu" onclick="changeMode('cpu')">🤖 CPU対戦</button>
+      <button class="mode-btn " id="mode-local" onclick="changeMode('local')">👥 二人対戦</button>
+      <button class="mode-btn " id="mode-p2p" onclick="changeMode('p2p')">🌐 通信プレイ</button>
+    </div>
+
+    <!-- In-game CPU Difficulty Selector -->
+    <div class="diff-bar" id="in-game-diff-bar" style="display: flex;">
+      <span>🛡️ 難易度:</span>
+      <button class="diff-btn " id="diff-btn-1" onclick="setInGameCpuDiff(1)">初級</button>
+      <button class="diff-btn " id="diff-btn-2" onclick="setInGameCpuDiff(2)">中級</button>
+      <button class="diff-btn active" id="diff-btn-4" onclick="setInGameCpuDiff(4)">最強</button>
+    </div>
+
+    <!-- Timer Mode Selector: Unlimited vs 10s vs 20s vs 30s -->
+    <div class="timer-bar">
+      <span>⏱️ 制限時間:</span>
+      <button class="timer-btn active" id="timer-unlimited" onclick="setTimerMode('unlimited')">無制限</button>
+      <button class="timer-btn " id="timer-10" onclick="setTimerMode(10)">10秒</button>
+      <button class="timer-btn " id="timer-20" onclick="setTimerMode(20)">20秒</button>
+      <button class="timer-btn " id="timer-30" onclick="setTimerMode(30)">30秒</button>
+    </div>
+  </div>
+
+  <div class="status-card" id="status-card">
+    <div class="tray-top-bar">
+      <div class="flow-badge" id="flow-badge">
+        <span style="color: #64748b;">受渡状況:</span>
+        <span id="flow-text">P1 ➔ P2</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="timer-pill" style="display: none; font-size: 0.75rem; font-weight: 900; background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; padding: 2px 8px; border-radius: 9999px;">
+          ⏱️ <span id="timer-num">20</span>s
+        </span>
+        <div id="action-badge-container">
+          <span class="action-badge badge-choose" id="action-badge">【相手に渡すカード】を選んでください</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Countdown meter bar -->
+    <div class="timer-meter-wrap" id="timer-meter-wrap">
+      <div class="timer-meter-bar" id="timer-meter-bar"></div>
+    </div>
+
+    <div class="tray-main-content">
+      <div class="tray-card-section">
+        <div class="card-slot-box" id="hand-card-slot">
+          <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-align: center;">未選択</span>
+        </div>
+        <div>
+          <div class="attr-mini-tags" id="card-attr-tags" style="display: none;"></div>
+          <div class="status-msg" id="status-text">P1: 渡すカードを選択してください</div>
+          <div style="font-size: 0.72rem; color: #64748b; font-weight: 700;" id="sub-status">残りのカードから相手に置かせたい1枚をタップ</div>
+        </div>
+      </div>
+
+      <div class="player-badge">
+        <div class="player-icon p1-icon" id="player-icon">P1</div>
+        <div>
+          <div style="font-size: 0.72rem; color: #64748b; font-weight: 800;">現在の手番</div>
+          <div style="font-size: 0.85rem; font-weight: 900;" id="current-player-name">プレイヤー1</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Stage Switcher (<680px) -->
+  <div class="mobile-stage-bar" id="mobile-stage-bar">
+    <button class="mobile-tab-btn" id="mob-tab-board" onclick="setMobileStage('board')">
+      <span>🎯 盤面</span>
+      <span class="mob-pill" id="mob-board-pill" style="display: none;">配置</span>
+    </button>
+    <button class="mobile-tab-btn active" id="mob-tab-pool" onclick="setMobileStage('pool')">
+      <span>🃏 カード</span>
+      <span class="mob-pill" id="mob-pool-pill">選択</span>
+    </button>
+    <button class="mobile-tab-btn" id="mob-tab-both" onclick="setMobileStage('both')">
+      <span>📱 両方</span>
+    </button>
+  </div>
+
+  <div class="game-container">
+    <div class="board-wrapper" id="board-wrapper-el">
+      <div class="guide-banner" id="board-guide-banner" style="display: none;"></div>
+      <div class="board-grid" id="board-grid"></div>
+    </div>
+
+    <div class="pool-wrapper" id="pool-wrapper-el">
+      <div class="pool-header">
+        <div>
+          <span>カード置き場</span>
+          <span id="pool-count" style="font-size: 0.75rem; color: #64748b; margin-left: 6px;">残り 16 枚</span>
+        </div>
+        <span id="pool-guide-pill" style="font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #fef3c7; color: #92400e;">選択中</span>
+      </div>
+      <div class="pool-grid" id="pool-grid"></div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- Win Floating Bar (When modal is closed) -->
+  <div class="win-floating-bar" id="win-floating-bar" style="display: none;">
+    <span id="win-floating-text" style="font-weight: 800;">👑 QUARTO達成！</span>
+    <button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openWinModal()">🏆 結果を見る</button>
+    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem; background: #334155; color: white;" onclick="restartGame()">🔄 再戦</button>
+  </div>
+
+  <!-- Win Modal -->
+  <div class="overlay-modal" id="win-modal" style="display: none;">
+    <div class="modal-box" style="position: relative; max-width: 380px;">
+      <button class="modal-close" onclick="hideWinModal()" title="盤面を確認する">✕</button>
+      <div style="font-size: 2.2rem; margin-bottom: 4px;">🏆</div>
+      <div class="win-title" id="win-title" style="font-size: 1.3rem;">QUARTO! 勝利！</div>
+      <p id="win-subtitle" style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;"></p>
+
+      <!-- 4 Cards Preview Area -->
+      <div id="win-preview-box" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 8px; margin-bottom: 10px;">
+        <div style="font-size: 0.75rem; font-weight: 800; color: #92400e; margin-bottom: 6px;">揃った4枚のカード</div>
+        <div id="win-cards-grid" style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;"></div>
+        <div style="font-size: 0.75rem; font-weight: 800; color: #92400e; margin-bottom: 4px;">一致した属性</div>
+        <div class="attr-tags" id="win-attr-tags" style="justify-content: center; gap: 4px;"></div>
+      </div>
+
+      <div style="display: flex; gap: 6px;">
+        <button class="btn" style="flex: 1; padding: 8px; font-size: 0.8rem; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;" onclick="hideWinModal()">🔍 盤面を確認する</button>
+        <button class="btn btn-primary" style="flex: 1; padding: 8px; font-size: 0.8rem;" onclick="restartGame()">もう一度遊ぶ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Modal -->
+  <div class="overlay-modal" id="rules-modal" style="display: none;">
+    <div class="modal-box" style="text-align: left; max-height: 85vh; overflow-y: auto;">
+      <button class="modal-close" onclick="closeRules()">✕</button>
+      <h2 style="color: #b45309; font-size: 1.3rem; margin-bottom: 10px;">📖 16属性クォルトのルール</h2>
+      <p style="font-size: 0.85rem; color: #334155; margin-bottom: 12px;">
+        16種類のカードには4つの属性があります：<br>
+        1. <strong>背景色:</strong> 赤 / 青<br>
+        2. <strong>外枠形状:</strong> 四角 / 丸<br>
+        3. <strong>中央マーク:</strong> 星 (★) / ハート (♥)<br>
+        4. <strong>マーク色:</strong> 黄 / 緑
+      </p>
+      <p style="font-size: 0.85rem; color: #334155; margin-bottom: 12px; background: #fffbeb; padding: 10px; border-radius: 12px; border: 1px solid #fde68a;">
+        ⭐ <strong>最大の特徴:</strong> 自分が置くカードは、<strong>相手が選んで渡してくれたカード</strong>です！
+      </p>
+      <p style="font-size: 0.85rem; color: #334155; margin-bottom: 12px;">
+        縦・横・斜めの4マスにおいて、<strong>どれか1つの属性が4枚共通</strong>した瞬間「クォルト」達成となり、カードを置いたプレイヤーが勝利します！
+      </p>
+      <button class="btn btn-primary" style="width: 100%; padding: 8px;" onclick="closeRules()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- P2P Modal -->
+  <div class="overlay-modal" id="p2p-modal" style="display: none;">
+    <div class="modal-box" style="text-align: left; max-width: 440px;">
+      <button class="modal-close" onclick="closeP2PModal()">✕</button>
+      <h2 style="color: #0284c7; font-size: 1.3rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        🌐 通信プレイ (P2P対戦)
+      </h2>
+      <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+        <button class="btn" style="flex: 1;" id="p2p-tab-host" onclick="switchP2PTab('host')">部屋を作る (ホスト)</button>
+        <button class="btn" style="flex: 1;" id="p2p-tab-join" onclick="switchP2PTab('join')">参加する (ゲスト)</button>
+      </div>
+
+      <div id="p2p-host-panel">
+        <p style="font-size: 0.8rem; color: #475569; margin-bottom: 8px;">
+          ホストとして待機します。対戦相手にルームIDを教えてください。
+        </p>
+        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+          <input type="text" id="p2p-host-id" style="flex: 1; padding: 8px; border: 2px solid #cbd5e1; border-radius: 10px; font-weight: bold; font-family: monospace;" readonly />
+          <button class="btn btn-primary" onclick="copyP2PRoomId()">コピー</button>
+        </div>
+        <div id="p2p-host-status" style="font-size: 0.8rem; color: #0284c7; font-weight: bold; margin-bottom: 12px;">
+          相手の接続を待機中...
+        </div>
+      </div>
+
+      <div id="p2p-join-panel" style="display: none;">
+        <p style="font-size: 0.8rem; color: #475569; margin-bottom: 8px;">
+          対戦相手から教えてもらったルームIDを入力してください。
+        </p>
+        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+          <input type="text" id="p2p-join-id" placeholder="例: quarto-1234" style="flex: 1; padding: 8px; border: 2px solid #cbd5e1; border-radius: 10px; font-weight: bold; font-family: monospace;" />
+          <button class="btn btn-primary" onclick="joinP2PRoom()">参加する</button>
+        </div>
+        <div id="p2p-join-status" style="font-size: 0.8rem; color: #e11d48; font-weight: bold;"></div>
+      </div>
+
+      <div style="font-size: 0.72rem; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 12px;">
+        WebRTC (PeerJS) を利用したサーバーレス通信です
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Card Definition & Rendering ---
+    // bit 0: 0=red, 1=blue
+    // bit 1: 0=square, 1=circle
+    // bit 2: 0=star, 1=heart
+    // bit 3: 0=yellow, 1=green
+    function createCardSvg(id) {
+      const color = (id & 1) ? '#0284C7' : '#EF4444';
+      const isCircle = (id & 2) !== 0;
+      const isHeart = (id & 4) !== 0;
+      const markColor = (id & 8) ? '#22C55E' : '#FACC15';
+      const markStroke = (id & 8) ? '#15803D' : '#CA8A04';
+
+      let bgShape = isCircle 
+        ? `<circle cx="50" cy="50" r="44" fill="${color}" stroke="#ffffff" stroke-width="2" />`
+        : `<rect x="6" y="6" width="88" height="88" rx="8" fill="${color}" stroke="#ffffff" stroke-width="2" />`;
+
+      let markShape = isHeart
+        ? `<path d="M 50,78 C 30,62 18,50 18,36 C 18,24 28,18 38,18 C 44,18 48,22 50,26 C 52,22 56,18 62,18 C 72,18 82,24 82,36 C 82,50 70,62 50,78 Z" fill="${markColor}" stroke="${markStroke}" stroke-width="3.5" stroke-linejoin="round" />`
+        : `<polygon points="50,16 60,38 84,40 66,56 71,80 50,67 29,80 34,56 16,40 40,38" fill="${markColor}" stroke="${markStroke}" stroke-width="3.5" stroke-linejoin="round" />`;
+
+      return `<svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">${bgShape}${markShape}</svg>`;
+    }
+
+    // --- Audio ---
+    let soundEnabled = true;
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx && typeof window !== 'undefined') {
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) audioCtx = new AudioContextClass();
+        } catch(e) {}
+      }
+      return audioCtx;
+    }
+
+    function playBeep(freq, duration, type='sine') {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch(e){}
+    }
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const soundBtn = document.getElementById('sound-btn');
+      if (soundBtn) soundBtn.innerText = soundEnabled ? '🔊 音ON' : '🔇 音OFF';
+      const openSoundBtn = document.getElementById('opening-sound-btn');
+      if (openSoundBtn) openSoundBtn.innerText = soundEnabled ? '🔊 音ON' : '🔇 音OFF';
+    }
+
+    function playTick() {
+      playBeep(880, 0.04, 'sine');
+    }
+
+    function playTimeoutSound() {
+      playBeep(220, 0.35, 'sawtooth');
+    }
+
+    // --- Mobile Responsive Stage Switcher ---
+    let mobileStage = 'pool'; // 'board' | 'pool' | 'both'
+
+    function setMobileStage(stage, isAuto = false) {
+      if (!isAuto) {
+        mobileStage = stage;
+      } else if (mobileStage === 'both') {
+        return; // retain user preference if 'both' is selected
+      } else {
+        mobileStage = stage;
+      }
+
+      const bTab = document.getElementById('mob-tab-board');
+      const pTab = document.getElementById('mob-tab-pool');
+      const bothTab = document.getElementById('mob-tab-both');
+      if (bTab) bTab.classList.toggle('active', mobileStage === 'board');
+      if (pTab) pTab.classList.toggle('active', mobileStage === 'pool');
+      if (bothTab) bothTab.classList.toggle('active', mobileStage === 'both');
+
+      const isMobile = window.innerWidth <= 680;
+      const bEl = document.getElementById('board-wrapper-el');
+      const pEl = document.getElementById('pool-wrapper-el');
+
+      if (isMobile) {
+        if (mobileStage === 'board') {
+          if (bEl) bEl.style.display = 'flex';
+          if (pEl) pEl.style.display = 'none';
+        } else if (mobileStage === 'pool') {
+          if (bEl) bEl.style.display = 'none';
+          if (pEl) pEl.style.display = 'block';
+        } else {
+          if (bEl) bEl.style.display = 'flex';
+          if (pEl) pEl.style.display = 'block';
+        }
+      } else {
+        if (bEl) bEl.style.display = 'flex';
+        if (pEl) pEl.style.display = 'block';
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      setMobileStage(mobileStage, true);
+    });
+
+    // --- Timer Management ---
+    let timerMode = 'unlimited'; // 'unlimited' | 10 | 20 | 30
+    let timeLeft = null;
+    let timerInterval = null;
+
+    function setTimerMode(newMode) {
+      timerMode = newMode;
+      ['unlimited', '10', '20', '30'].forEach(m => {
+        const btn = document.getElementById('timer-' + m);
+        if (btn) btn.className = 'timer-btn' + (String(newMode) === m ? ' active' : '');
+      });
+      if (conn && conn.open) {
+        conn.send({ type: 'SET_TIMER_MODE', timerMode: newMode });
+      }
+      startTurnTimer();
+    }
+
+    function stopTurnTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      const pill = document.getElementById('timer-pill');
+      const meterWrap = document.getElementById('timer-meter-wrap');
+      if (pill) pill.style.display = 'none';
+      if (meterWrap) meterWrap.style.display = 'none';
+    }
+
+    function startTurnTimer() {
+      stopTurnTimer();
+      if (timerMode === 'unlimited' || isGameOver) return;
+      if (mode === 'cpu' && currentPlayer === 2) return; // Don't time CPU
+
+      const total = Number(timerMode);
+      timeLeft = total;
+
+      const pill = document.getElementById('timer-pill');
+      const numEl = document.getElementById('timer-num');
+      const meterWrap = document.getElementById('timer-meter-wrap');
+      const meterBar = document.getElementById('timer-meter-bar');
+
+      if (pill) {
+        pill.style.display = 'inline-block';
+        pill.style.borderColor = '#6ee7b7';
+        pill.style.background = '#ecfdf5';
+        pill.style.color = '#065f46';
+      }
+      if (meterWrap) meterWrap.style.display = 'block';
+      if (meterBar) {
+        meterBar.style.width = '100%';
+        meterBar.style.background = '#10b981';
+      }
+      if (numEl) numEl.innerText = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        if (numEl) numEl.innerText = timeLeft;
+        if (meterBar) {
+          const pct = Math.max(0, (timeLeft / total) * 100);
+          meterBar.style.width = pct + '%';
+          if (timeLeft <= 5) {
+            meterBar.style.background = '#ef4444';
+            if (pill) {
+              pill.style.borderColor = '#fca5a5';
+              pill.style.background = '#fef2f2';
+              pill.style.color = '#b91c1c';
+            }
+          }
+        }
+
+        if (timeLeft <= 5 && timeLeft > 0) {
+          playTick();
+        }
+
+        if (timeLeft <= 0) {
+          stopTurnTimer();
+          playTimeoutSound();
+          handleTimeout();
+        }
+      }, 1000);
+    }
+
+    function handleTimeout() {
+      if (isGameOver) return;
+      if (phase === 'PLACE_PIECE' && activeCard !== null) {
+        const emptyCells = [];
+        for (let i = 0; i < 16; i++) {
+          if (board[i] === null) emptyCells.push(i);
+        }
+        if (emptyCells.length > 0) {
+          const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+          handleCellClick(randomCell);
+        }
+      } else if (phase === 'CHOOSE_PIECE' && pool.length > 0) {
+        const randomCard = pool[Math.floor(Math.random() * pool.length)];
+        handleCardSelect(randomCard);
+      }
+    }
+
+    // --- Winning Lines ---
+    const WINNING_LINES = [
+      [0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], // rows
+      [0,4,8,12], [1,5,9,13], [2,6,10,14], [3,7,11,15], // cols
+      [0,5,10,15], [3,6,9,12]                            // diags
+    ];
+
+    function checkQuarto(board) {
+      for (const line of WINNING_LINES) {
+        const [a, b, c, d] = line;
+        const ca = board[a], cb = board[b], cc = board[c], cd = board[d];
+        if (ca !== null && cb !== null && cc !== null && cd !== null) {
+          const ones = ca & cb & cc & cd;
+          const zeros = (~ca & ~cb & ~cc & ~cd) & 0xF;
+          if ((ones | zeros) !== 0) {
+            const matches = [];
+            if (zeros & 1) matches.push('背景色: 赤');
+            if (ones & 1) matches.push('背景色: 青');
+            if (zeros & 2) matches.push('外枠: 四角');
+            if (ones & 2) matches.push('外枠: 丸');
+            if (zeros & 4) matches.push('マーク: 星 (★)');
+            if (ones & 4) matches.push('マーク: ハート (♥)');
+            if (zeros & 8) matches.push('マーク色: 黄');
+            if (ones & 8) matches.push('マーク色: 緑');
+            return { line, matches };
+          }
+        }
+      }
+      return null;
+    }
+
+    function checkInstantQuarto(board, cell, cardId) {
+      board[cell] = cardId;
+      const won = checkQuarto(board) !== null;
+      board[cell] = null;
+      return won;
+    }
+
+    // --- AI Strategy (Difficulty 1: 初級, 2: 中級, 4: 最強) ---
+    const POS_WEIGHTS = [3,2,2,3, 2,4,4,2, 2,4,4,2, 3,2,2,3];
+
+    function getCpuMove(board, pool, givenCard, difficulty = 4) {
+      const emptyCells = [];
+      for (let i = 0; i < 16; i++) {
+        if (board[i] === null) emptyCells.push(i);
+      }
+
+      // --- Level 1: 初級 (かんたん) ---
+      if (difficulty === 1) {
+        let chosenCell = null;
+        // 70% chance to detect and take immediate winning placement
+        if (Math.random() < 0.7) {
+          for (const cell of emptyCells) {
+            if (checkInstantQuarto(board, cell, givenCard)) {
+              chosenCell = cell;
+              break;
+            }
+          }
+        }
+        if (chosenCell === null) {
+          // Play randomly on empty cells
+          chosenCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        board[chosenCell] = givenCard;
+        const nextEmpty = emptyCells.filter(c => c !== chosenCell);
+        let chosenGive = pool[0] ?? null;
+
+        if (pool.length > 0) {
+          // 40% chance of blunder: hand over a random piece (can even be poison!)
+          if (Math.random() < 0.4) {
+            chosenGive = pool[Math.floor(Math.random() * pool.length)];
+          } else {
+            const safeGives = pool.filter(c => !nextEmpty.some(ec => checkInstantQuarto(board, ec, c)));
+            chosenGive = safeGives.length > 0
+              ? safeGives[Math.floor(Math.random() * safeGives.length)]
+              : pool[Math.floor(Math.random() * pool.length)];
+          }
+        }
+        board[chosenCell] = null;
+        return { bestCell: chosenCell, bestGive: chosenGive };
+      }
+
+      // --- Level 2: 中級 (ふつう) ---
+      if (difficulty === 2) {
+        // Always take instant win if available
+        for (const cell of emptyCells) {
+          if (checkInstantQuarto(board, cell, givenCard)) {
+            board[cell] = givenCard;
+            const nextEmpty = emptyCells.filter(c => c !== cell);
+            const safeGives = pool.filter(c => !nextEmpty.some(ec => checkInstantQuarto(board, ec, c)));
+            board[cell] = null;
+            return { bestCell: cell, bestGive: safeGives[0] ?? pool[0] ?? null };
+          }
+        }
+
+        emptyCells.sort((a, b) => POS_WEIGHTS[b] - POS_WEIGHTS[a]);
+        let chosenCell = emptyCells[0];
+        let chosenGive = pool[0] ?? null;
+        let bestScore = -Infinity;
+
+        for (const cell of emptyCells) {
+          board[cell] = givenCard;
+          const nextEmpty = emptyCells.filter(c => c !== cell);
+          const safeGives = pool.filter(c => !nextEmpty.some(ec => checkInstantQuarto(board, ec, c)));
+          const candidateGives = safeGives.length > 0 ? safeGives : pool;
+
+          for (const nextCard of candidateGives) {
+            let score = POS_WEIGHTS[cell] + (safeGives.includes(nextCard) ? 100 : -5000);
+            if (score > bestScore) {
+              bestScore = score;
+              chosenCell = cell;
+              chosenGive = nextCard;
+            }
+          }
+          board[cell] = null;
+        }
+        return { bestCell: chosenCell, bestGive: chosenGive };
+      }
+
+      // --- Level 4: 最強 (上級) ---
+      // 1. Instant win placement
+      for (const cell of emptyCells) {
+        if (checkInstantQuarto(board, cell, givenCard)) {
+          board[cell] = givenCard;
+          const nextEmpty = emptyCells.filter(c => c !== cell);
+          const safeGives = pool.filter(c => !nextEmpty.some(ec => checkInstantQuarto(board, ec, c)));
+          board[cell] = null;
+          return { bestCell: cell, bestGive: safeGives[0] ?? pool[0] ?? null };
+        }
+      }
+
+      let bestScore = -Infinity;
+      let chosenCell = emptyCells[0];
+      let chosenGive = pool[0] ?? null;
+
+      emptyCells.sort((a, b) => POS_WEIGHTS[b] - POS_WEIGHTS[a]);
+
+      for (const cell of emptyCells) {
+        board[cell] = givenCard;
+        const nextEmpty = emptyCells.filter(c => c !== cell);
+
+        if (pool.length === 0) {
+          board[cell] = null;
+          return { bestCell: cell, bestGive: null };
+        }
+
+        const safeGives = pool.filter(c => !nextEmpty.some(ec => checkInstantQuarto(board, ec, c)));
+        const candidateGives = safeGives.length > 0 ? safeGives : pool;
+
+        for (const nextCard of candidateGives) {
+          let score = POS_WEIGHTS[cell] * 2 + (safeGives.includes(nextCard) ? 200 : -5000);
+
+          // Evaluate threats (lines with 3 shared attributes)
+          for (const line of WINNING_LINES) {
+            if (line.includes(cell)) {
+              let filled = 0;
+              const cards = [];
+              for (const idx of line) {
+                if (board[idx] !== null) {
+                  filled++;
+                  cards.push(board[idx]);
+                }
+              }
+              if (filled === 3) {
+                const match = (cards[0] & cards[1] & cards[2]) | ((~cards[0] & ~cards[1] & ~cards[2]) & 0xF);
+                if (match !== 0) score += 80;
+              }
+            }
+          }
+
+          if (score > bestScore) {
+            bestScore = score;
+            chosenCell = cell;
+            chosenGive = nextCard;
+          }
+        }
+        board[cell] = null;
+      }
+
+      return { bestCell: chosenCell, bestGive: chosenGive };
+    }
+
+    // --- Game State ---
+    let mode = 'cpu'; // 'cpu' | 'local' | 'p2p'
+    let cpuDifficulty = 4; // 1 | 2 | 4
+    let board = Array(16).fill(null);
+    let pool = Array.from({length: 16}, (_, i) => i);
+    let activeCard = null;
+    let currentPlayer = 1; // 1 or 2
+    let phase = 'CHOOSE_PIECE'; // 'CHOOSE_PIECE' or 'PLACE_PIECE'
+    let isGameOver = false;
+
+    // Render Board
+    function renderBoard(winningLine = null) {
+      const grid = document.getElementById('board-grid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 16; i++) {
+        const cell = document.createElement('div');
+        const isWin = winningLine && winningLine.includes(i);
+        const isDimmed = winningLine && !winningLine.includes(i);
+        cell.className = 'cell' + (board[i] !== null ? ' filled' : '') + (isWin ? ' winning' : '') + (isDimmed ? ' dimmed' : '');
+        if (board[i] !== null) {
+          cell.innerHTML = createCardSvg(board[i]);
+        }
+        cell.onclick = () => handleCellClick(i);
+        grid.appendChild(cell);
+      }
+    }
+
+    // Render Pool
+    function renderPool() {
+      const poolGrid = document.getElementById('pool-grid');
+      poolGrid.innerHTML = '';
+      document.getElementById('pool-count').innerText = `残り ${pool.length} 枚`;
+
+      for (let i = 0; i < 16; i++) {
+        const isAvailable = pool.includes(i);
+        const tile = document.createElement('div');
+        tile.className = 'card-tile' + (isAvailable ? '' : ' disabled') + (activeCard === i ? ' selected' : '');
+        tile.innerHTML = createCardSvg(i);
+        if (isAvailable && phase === 'CHOOSE_PIECE' && !isGameOver) {
+          tile.onclick = () => handleCardSelect(i);
+        }
+        poolGrid.appendChild(tile);
+      }
+
+      // Hand slot & Attributes
+      const handSlot = document.getElementById('hand-card-slot');
+      const attrTags = document.getElementById('card-attr-tags');
+      const isMyTurnToPlace = (mode === 'cpu' && currentPlayer === 1) || (mode === 'local' && currentPlayer === 1) || (mode === 'p2p' && typeof myP2pPlayerId !== 'undefined' && currentPlayer === myP2pPlayerId);
+
+      if (activeCard !== null) {
+        handSlot.innerHTML = createCardSvg(activeCard);
+        handSlot.className = 'card-slot-box ' + (isMyTurnToPlace ? 'active-mine' : 'active-opp');
+
+        // Render card attribute tags
+        const colorStr = (activeCard & 1) ? '青' : '赤';
+        const shapeStr = (activeCard & 2) ? '丸' : '四角';
+        const markStr = (activeCard & 4) ? 'ハート' : '星';
+        const markColStr = (activeCard & 8) ? '緑' : '黄';
+        attrTags.style.display = 'flex';
+        attrTags.innerHTML = '<span class="mini-tag">背景: ' + colorStr + '</span>'
+          + '<span class="mini-tag">外枠: ' + shapeStr + '</span>'
+          + '<span class="mini-tag">マーク: ' + markStr + '</span>'
+          + '<span class="mini-tag">色: ' + markColStr + '</span>';
+      } else {
+        handSlot.innerHTML = '<span style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-align: center;">未選択</span>';
+        handSlot.className = 'card-slot-box';
+        attrTags.style.display = 'none';
+        attrTags.innerHTML = '';
+      }
+    }
+
+    function updateStatus() {
+      const pName = currentPlayer === 1 ? 'プレイヤー1' : (mode === 'cpu' ? 'CPU' : 'プレイヤー2');
+      const icon = document.getElementById('player-icon');
+      icon.className = 'player-icon ' + (currentPlayer === 1 ? 'p1-icon' : 'p2-icon');
+      icon.innerText = currentPlayer === 1 ? 'P1' : (mode === 'cpu' ? 'CPU' : 'P2');
+      const currPNameEl = document.getElementById('current-player-name');
+      if (currPNameEl) currPNameEl.innerText = pName;
+
+      const st = document.getElementById('status-text');
+      const sub = document.getElementById('sub-status');
+      const flowText = document.getElementById('flow-text');
+      const actionBadge = document.getElementById('action-badge');
+      const boardGuide = document.getElementById('board-guide-banner');
+      const poolGuide = document.getElementById('pool-guide-pill');
+
+      const isMe = (p) => {
+        if (mode === 'cpu') return p === 1;
+        if (mode === 'p2p' && typeof myP2pPlayerId !== 'undefined') return p === myP2pPlayerId;
+        return p === currentPlayer;
+      };
+
+      const isMyPlace = phase === 'PLACE_PIECE' && isMe(currentPlayer);
+
+      if (isGameOver) {
+        st.innerText = 'ゲーム終了';
+        sub.innerText = 'リセットボタンで再戦できます';
+        if (boardGuide) boardGuide.style.display = 'none';
+        return;
+      }
+
+      if (phase === 'CHOOSE_PIECE') {
+        setMobileStage('pool', true);
+        const bPill = document.getElementById('mob-board-pill');
+        const pPill = document.getElementById('mob-pool-pill');
+        if (bPill) bPill.style.display = 'none';
+        if (pPill) { pPill.style.display = 'inline'; pPill.innerText = '選択'; }
+
+        if (flowText) flowText.innerText = `${pName} ➔ 相手に渡すカード選択中`;
+        if (actionBadge) {
+          actionBadge.className = 'action-badge badge-choose';
+          actionBadge.innerText = isMe(currentPlayer) ? '【相手に渡すカード】を選んでください' : '相手がカードを選んでいます...';
+        }
+
+        st.innerText = `${pName}: 渡すカードを選択してください`;
+        sub.innerText = '相手に置かせたい1枚を右の置き場からタップしてください';
+
+        if (boardGuide) boardGuide.style.display = 'none';
+        if (poolGuide) {
+          poolGuide.innerText = isMe(currentPlayer) ? '渡すカードを選択' : '相手が選択中';
+          poolGuide.style.background = isMe(currentPlayer) ? '#f59e0b' : '#e2e8f0';
+          poolGuide.style.color = isMe(currentPlayer) ? '#ffffff' : '#64748b';
+        }
+      } else {
+        setMobileStage('board', true);
+        const bPill = document.getElementById('mob-board-pill');
+        const pPill = document.getElementById('mob-pool-pill');
+        if (bPill) { bPill.style.display = 'inline'; bPill.innerText = '配置'; }
+        if (pPill) pPill.style.display = 'none';
+
+        const giver = currentPlayer === 1 ? (mode === 'cpu' ? 'CPU' : 'P2') : 'P1';
+        const placer = currentPlayer === 1 ? 'P1' : (mode === 'cpu' ? 'CPU' : 'P2');
+        if (flowText) flowText.innerText = `${giver} (選定) ➔ ${placer} (配置番)`;
+
+        if (isMyPlace) {
+          if (actionBadge) {
+            actionBadge.className = 'action-badge badge-mine';
+            actionBadge.innerText = '【あなたが置くカード】です！';
+          }
+          st.innerHTML = '<span style="color: #059669; font-weight: 900;">あなたが配置する番です！</span>';
+          sub.innerText = '下の盤面の空きマスをクリックして配置してください';
+
+          if (boardGuide) {
+            boardGuide.style.display = 'block';
+            boardGuide.className = 'guide-banner mine';
+            boardGuide.innerText = '👇 【あなたが置く番】 盤面の空きマスをクリックして配置してください';
+          }
+        } else {
+          if (actionBadge) {
+            actionBadge.className = 'action-badge badge-opponent';
+            actionBadge.innerText = `【${pName}が置くカード】です`;
+          }
+          st.innerHTML = `<span style="color: #0284c7; font-weight: 900;">${pName}が配置する番です</span>`;
+          sub.innerText = '相手が盤面に配置するのを待っています...';
+
+          if (boardGuide) {
+            boardGuide.style.display = 'block';
+            boardGuide.className = 'guide-banner opp';
+            boardGuide.innerText = `⏳ 【${pName}が置く番】 相手の配置を待っています...`;
+          }
+        }
+
+        if (poolGuide) {
+          poolGuide.innerText = '配置フェーズ中';
+          poolGuide.style.background = '#f1f5f9';
+          poolGuide.style.color = '#94a3b8';
+        }
+      }
+
+      // Start/reset timer for this turn
+      startTurnTimer();
+    }
+
+    function handleCardSelect(cardId, isRemote = false) {
+      if (phase !== 'CHOOSE_PIECE' || isGameOver) return;
+      if (mode === 'p2p' && !isRemote) {
+        if (currentPlayer !== myP2pPlayerId) return;
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: 'CHOOSE', cardId });
+        }
+      }
+
+      playBeep(440, 0.1);
+      activeCard = cardId;
+      pool = pool.filter(c => c !== cardId);
+      
+      // Hand over to other player to place!
+      currentPlayer = currentPlayer === 1 ? 2 : 1;
+      phase = 'PLACE_PIECE';
+
+      renderPool();
+      renderBoard();
+      updateStatus();
+
+      if (mode === 'cpu' && currentPlayer === 2) {
+        triggerCpuTurn();
+      }
+    }
+
+    function handleCellClick(cellIndex, isRemote = false) {
+      if (phase !== 'PLACE_PIECE' || isGameOver || board[cellIndex] !== null || activeCard === null) return;
+      if (mode === 'p2p' && !isRemote) {
+        if (currentPlayer !== myP2pPlayerId) return;
+        if (peerConn && peerConn.open) {
+          peerConn.send({ type: 'PLACE', cellIndex });
+        }
+      }
+
+      playBeep(320, 0.12, 'triangle');
+      board[cellIndex] = activeCard;
+      const placedCard = activeCard;
+      activeCard = null;
+
+      // Check Quarto
+      const winResult = checkQuarto(board);
+      if (winResult) {
+        isGameOver = true;
+        stopTurnTimer();
+        playBeep(880, 0.4);
+        renderBoard(winResult.line);
+        renderPool();
+        const flowText = document.getElementById('flow-text');
+        if (flowText) flowText.innerHTML = '<span style="color:#d97706;font-weight:900;">👑 QUARTO成立！ 揃った属性: ' + winResult.matches.join(' / ') + '</span>';
+        setTimeout(() => {
+          showWin(currentPlayer, winResult.matches, winResult.line);
+        }, 2400);
+        return;
+      }
+
+      // Check Draw
+      if (board.every(c => c !== null)) {
+        isGameOver = true;
+        stopTurnTimer();
+        renderBoard();
+        renderPool();
+        setTimeout(() => {
+          showDraw();
+        }, 1500);
+        return;
+      }
+
+      // Now this player chooses next piece to give
+      phase = 'CHOOSE_PIECE';
+      renderBoard();
+      renderPool();
+      updateStatus();
+
+      if (mode === 'cpu' && currentPlayer === 2) {
+        triggerCpuTurn();
+      }
+    }
+
+    function triggerCpuTurn() {
+      setTimeout(() => {
+        if (isGameOver) return;
+        if (phase === 'PLACE_PIECE') {
+          const move = getCpuMove(board, pool, activeCard, cpuDifficulty);
+          board[move.bestCell] = activeCard;
+          activeCard = null;
+          playBeep(300, 0.1);
+
+          const winResult = checkQuarto(board);
+          if (winResult) {
+            isGameOver = true;
+            stopTurnTimer();
+            playBeep(880, 0.4);
+            renderBoard(winResult.line);
+            renderPool();
+            const flowText = document.getElementById('flow-text');
+            if (flowText) flowText.innerHTML = '<span style="color:#d97706;font-weight:900;">👑 QUARTO成立！ 揃った属性: ' + winResult.matches.join(' / ') + '</span>';
+            setTimeout(() => {
+              showWin(2, winResult.matches, winResult.line);
+            }, 2400);
+            return;
+          }
+
+          if (board.every(c => c !== null)) {
+            isGameOver = true;
+            stopTurnTimer();
+            renderBoard();
+            renderPool();
+            setTimeout(() => {
+              showDraw();
+            }, 1500);
+            return;
+          }
+
+          // CPU chooses card to give to Human
+          phase = 'CHOOSE_PIECE';
+          renderBoard();
+          renderPool();
+          updateStatus();
+
+          setTimeout(() => {
+            if (isGameOver) return;
+            const nextGive = move.bestGive ?? pool[0];
+            activeCard = nextGive;
+            pool = pool.filter(c => c !== nextGive);
+            currentPlayer = 1;
+            phase = 'PLACE_PIECE';
+            playBeep(440, 0.1);
+            renderBoard();
+            renderPool();
+            updateStatus();
+          }, 500);
+        }
+      }, 600);
+    }
+
+    let lastWinInfo = null;
+
+    function showWin(player, matches, line = []) {
+      lastWinInfo = { player, matches, line };
+      setMobileStage('board', false);
+      const modal = document.getElementById('win-modal');
+      const title = document.getElementById('win-title');
+      const sub = document.getElementById('win-subtitle');
+      const tags = document.getElementById('win-attr-tags');
+      const grid = document.getElementById('win-cards-grid');
+      const previewBox = document.getElementById('win-preview-box');
+
+      if (previewBox) previewBox.style.display = 'block';
+      title.innerText = '👑 QUARTO! 勝利！';
+      sub.innerText = (player === 1 ? 'プレイヤー1' : (mode === 'cpu' ? 'CPU' : 'プレイヤー2')) + ' の勝利です！';
+
+      if (grid) {
+        grid.innerHTML = '';
+        line.forEach(idx => {
+          if (board[idx] !== null) {
+            const cardBox = document.createElement('div');
+            cardBox.style.cssText = 'width: 44px; height: 44px; padding: 2px; background: white; border-radius: 8px; border: 1px solid #f59e0b; display: flex; align-items: center; justify-content: center;';
+            cardBox.innerHTML = createCardSvg(board[idx]);
+            grid.appendChild(cardBox);
+          }
+        });
+      }
+
+      tags.innerHTML = matches.map(m => '<span class="attr-tag">✓ ' + m + '</span>').join('');
+      modal.style.display = 'flex';
+      document.getElementById('win-floating-bar').style.display = 'none';
+    }
+
+    function hideWinModal() {
+      document.getElementById('win-modal').style.display = 'none';
+      const floatingBar = document.getElementById('win-floating-bar');
+      const floatingText = document.getElementById('win-floating-text');
+      if (lastWinInfo && floatingText) {
+        const pName = lastWinInfo.player === 1 ? 'プレイヤー1' : (mode === 'cpu' ? 'CPU' : 'プレイヤー2');
+        floatingText.innerText = '👑 ' + pName + ' 勝利！ (' + lastWinInfo.matches.join(', ') + ')';
+      }
+      floatingBar.style.display = 'flex';
+    }
+
+    function openWinModal() {
+      document.getElementById('win-modal').style.display = 'flex';
+      document.getElementById('win-floating-bar').style.display = 'none';
+    }
+
+    function showDraw() {
+      lastWinInfo = null;
+      setMobileStage('board', false);
+      const modal = document.getElementById('win-modal');
+      const title = document.getElementById('win-title');
+      const sub = document.getElementById('win-subtitle');
+      const previewBox = document.getElementById('win-preview-box');
+      title.innerText = '🤝 引き分け！';
+      sub.innerText = '全マスが埋まりましたが、クォルトは成立しませんでした。';
+      if (previewBox) previewBox.style.display = 'none';
+      modal.style.display = 'flex';
+      document.getElementById('win-floating-bar').style.display = 'none';
+    }
+
+    function restartGame() {
+      stopTurnTimer();
+      setMobileStage('pool', false);
+      board = Array(16).fill(null);
+      pool = Array.from({length: 16}, (_, i) => i);
+      activeCard = null;
+      currentPlayer = 1;
+      phase = 'CHOOSE_PIECE';
+      isGameOver = false;
+      lastWinInfo = null;
+      document.getElementById('win-modal').style.display = 'none';
+      document.getElementById('win-floating-bar').style.display = 'none';
+      const previewBox = document.getElementById('win-preview-box');
+      if (previewBox) previewBox.style.display = 'block';
+      renderBoard();
+      renderPool();
+      updateStatus();
+    }
+
+    let peer = null;
+    let peerConn = null;
+    let p2pRole = null; // 'host' | 'guest'
+    let myP2pPlayerId = 1;
+
+    function changeMode(newMode) {
+      mode = newMode;
+      document.getElementById('mode-cpu').className = 'mode-btn' + (mode === 'cpu' ? ' active' : '');
+      document.getElementById('mode-local').className = 'mode-btn' + (mode === 'local' ? ' active' : '');
+      document.getElementById('mode-p2p').className = 'mode-btn' + (mode === 'p2p' ? ' active' : '');
+      const diffBar = document.getElementById('in-game-diff-bar');
+      if (diffBar) {
+        diffBar.style.display = mode === 'cpu' ? 'flex' : 'none';
+      }
+      restartGame();
+      if (mode === 'p2p') {
+        openP2PModal();
+      }
+    }
+
+    function setInGameCpuDiff(diff) {
+      cpuDifficulty = Number(diff);
+      selectedOpeningCpuDiffValue = Number(diff);
+      [1, 2, 4].forEach(d => {
+        const btn = document.getElementById('diff-btn-' + d);
+        if (btn) btn.className = 'diff-btn' + (cpuDifficulty === d ? ' active' : '');
+      });
+      [1, 2, 4].forEach(d => {
+        const btn = document.getElementById('open-diff-' + d);
+        if (btn) btn.className = 'option-btn' + (cpuDifficulty === d ? ' active' : '');
+      });
+    }
+
+    function openRules() { document.getElementById('rules-modal').style.display = 'flex'; }
+    function closeRules() { document.getElementById('rules-modal').style.display = 'none'; }
+
+    function openP2PModal() {
+      document.getElementById('p2p-modal').style.display = 'flex';
+      switchP2PTab('host');
+    }
+    function closeP2PModal() { document.getElementById('p2p-modal').style.display = 'none'; }
+
+    function switchP2PTab(tab) {
+      document.getElementById('p2p-tab-host').className = 'btn' + (tab === 'host' ? ' btn-primary' : '');
+      document.getElementById('p2p-tab-join').className = 'btn' + (tab === 'join' ? ' btn-primary' : '');
+      document.getElementById('p2p-host-panel').style.display = tab === 'host' ? 'block' : 'none';
+      document.getElementById('p2p-join-panel').style.display = tab === 'join' ? 'block' : 'none';
+      if (tab === 'host' && !peer) {
+        initHostP2P();
+      }
+    }
+
+    function initHostP2P() {
+      const roomId = 'quarto-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('p2p-host-id').value = roomId;
+      p2pRole = 'host';
+      myP2pPlayerId = 1;
+      try {
+        if (peer) peer.destroy();
+        peer = new Peer(roomId);
+        peer.on('connection', (conn) => {
+          setupConnection(conn);
+        });
+        peer.on('error', (err) => {
+          document.getElementById('p2p-host-status').innerText = '接続待機エラー: ' + err.type;
+        });
+      } catch(e) {
+        document.getElementById('p2p-host-status').innerText = 'PeerJS初期化失敗';
+      }
+    }
+
+    function copyP2PRoomId() {
+      const el = document.getElementById('p2p-host-id');
+      navigator.clipboard.writeText(el.value);
+      alert('ルームIDをコピーしました: ' + el.value);
+    }
+
+    function joinP2PRoom() {
+      const targetId = document.getElementById('p2p-join-id').value.trim();
+      if (!targetId) return;
+      document.getElementById('p2p-join-status').innerText = '接続中...';
+      p2pRole = 'guest';
+      myP2pPlayerId = 2;
+      try {
+        if (peer) peer.destroy();
+        peer = new Peer();
+        peer.on('open', () => {
+          const conn = peer.connect(targetId);
+          setupConnection(conn);
+        });
+        peer.on('error', (err) => {
+          document.getElementById('p2p-join-status').innerText = '接続失敗: ' + err.type;
+        });
+      } catch(e) {
+        document.getElementById('p2p-join-status').innerText = '接続エラー';
+      }
+    }
+
+    function setupConnection(conn) {
+      peerConn = conn;
+      conn.on('open', () => {
+        closeP2PModal();
+        alert('P2P接続が確立しました！対戦開始！');
+        restartGame();
+      });
+      conn.on('data', (data) => {
+        if (data.type === 'CHOOSE' && typeof data.cardId === 'number') {
+          handleCardSelect(data.cardId, true);
+        } else if (data.type === 'PLACE' && typeof data.cellIndex === 'number') {
+          handleCellClick(data.cellIndex, true);
+        } else if (data.type === 'RESTART') {
+          restartGame();
+        } else if (data.type === 'SET_TIMER_MODE') {
+          timerMode = data.timerMode;
+          ['unlimited', '10', '20', '30'].forEach(m => {
+            const btn = document.getElementById('timer-' + m);
+            if (btn) btn.className = 'timer-btn' + (String(data.timerMode) === m ? ' active' : '');
+          });
+          startTurnTimer();
+        }
+      });
+      conn.on('close', () => {
+        alert('対戦相手が退出しました');
+      });
+    }
+
+    // --- Opening View Functions ---
+    let selectedOpeningMode = 'cpu';
+    let selectedOpeningCpuDiffValue = 4;
+    let selectedOpeningTimer = 'unlimited';
+
+    function switchOpeningTab(tab) {
+      document.getElementById('tab-btn-setup').className = 'opening-tab' + (tab === 'setup' ? ' active' : '');
+      document.getElementById('tab-btn-rules').className = 'opening-tab' + (tab === 'rules' ? ' active' : '');
+      document.getElementById('opening-body-setup').style.display = tab === 'setup' ? 'block' : 'none';
+      document.getElementById('opening-body-rules').style.display = tab === 'rules' ? 'block' : 'none';
+    }
+
+    function selectOpeningMode(newMode) {
+      selectedOpeningMode = newMode;
+      document.getElementById('open-opt-cpu').className = 'option-btn' + (newMode === 'cpu' ? ' active' : '');
+      document.getElementById('open-opt-local').className = 'option-btn' + (newMode === 'local' ? ' active' : '');
+      document.getElementById('open-opt-p2p').className = 'option-btn' + (newMode === 'p2p' ? ' active' : '');
+      const diffSec = document.getElementById('open-cpu-diff-section');
+      if (diffSec) {
+        diffSec.style.display = newMode === 'cpu' ? 'block' : 'none';
+      }
+      const timerLabel = document.getElementById('open-timer-label');
+      if (timerLabel) {
+        timerLabel.innerText = newMode === 'cpu' ? '③ 1手の制限時間' : '② 1手の制限時間';
+      }
+    }
+
+    function selectOpeningCpuDiff(diff) {
+      selectedOpeningCpuDiffValue = Number(diff);
+      cpuDifficulty = Number(diff);
+      [1, 2, 4].forEach(d => {
+        const btn = document.getElementById('open-diff-' + d);
+        if (btn) btn.className = 'option-btn' + (selectedOpeningCpuDiffValue === d ? ' active' : '');
+      });
+      [1, 2, 4].forEach(d => {
+        const btn = document.getElementById('diff-btn-' + d);
+        if (btn) btn.className = 'diff-btn' + (selectedOpeningCpuDiffValue === d ? ' active' : '');
+      });
+    }
+
+    function selectOpeningTimer(newTimer) {
+      selectedOpeningTimer = newTimer;
+      ['unlimited', '10', '20', '30'].forEach(t => {
+        const btn = document.getElementById('open-timer-' + t);
+        if (btn) btn.className = 'option-btn' + (String(newTimer) === t ? ' active' : '');
+      });
+    }
+
+    function startGameFromOpening() {
+      document.getElementById('opening-view').style.display = 'none';
+      document.getElementById('game-view').style.display = 'flex';
+      setInGameCpuDiff(selectedOpeningCpuDiffValue);
+      changeMode(selectedOpeningMode);
+      setTimerMode(selectedOpeningTimer);
+      restartGame();
+      if (selectedOpeningMode === 'p2p') {
+        openP2PModal();
+      }
+    }
+
+    function goToOpeningView() {
+      stopTurnTimer();
+      document.getElementById('game-view').style.display = 'none';
+      document.getElementById('opening-view').style.display = 'flex';
+      hideWinModal();
+      const fl = document.getElementById('win-floating-bar');
+      if (fl) fl.style.display = 'none';
+    }
+
+    // Init
+    renderBoard();
+    renderPool();
+    updateStatus();
+  </script>
+</body>
+</html>
